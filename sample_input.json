@@ -1,0 +1,15 @@
+{
+  "farmer": {"name": "Ravi", "state": "Karnataka", "soil_type": null, "ph": null,
+             "organic_carbon": null, "temp": null, "rainfall": null, "irrigated": true},
+  "profile": {"risk_tolerance": "medium", "capital_per_acre": 30000},
+  "plots": [
+    {"name": "North field", "acres": 3.0},
+    {"name": "River plot", "acres": 2.0, "soil_type": "loam", "ph": 7.0}
+  ],
+  "resources": {"water_m3": 6000, "labour_days": 350},
+  "sowing_date": "2026-11-10",
+  "forecast": [
+    {"date": "2026-11-10", "tmax": 29, "tmin": 17, "rain_mm": 0},
+    {"date": "2026-11-11", "tmax": 28, "tmin": 18, "rain_mm": 12}
+  ]
+}
