@@ -9,7 +9,7 @@ def _estimate(region, key, season):
         return r[season][0]
     if key == "rainfall":
         return r[season][1]
-    return {"soil_type": r["soil"], "ph": r["ph"], "organic_carbon": r["oc"], "irrigated": False}[key]
+    return {"soil_type": r["soil"], "ph": r["ph"], "organic_carbon": r["oc"], "irrigated": r.get("irrigated", False)}[key]
 
 
 def enrich(farm, season, use_measured_weather=True):

@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AgroAdvisor - Smart Rule-Based Crop Advisory</title>
+  <style>
+    :root {
+      --primary: #15803d;
+      --primary-hover: #166534;
+      --primary-light: #f0fdf4;
+      --primary-border: #bbf7d0;
+      --accent: #0284c7;
+      --bg-page: #f8fafc;
+      --bg-card: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+      --bubble-user: #15803d;
+      --bubble-bot: #ffffff;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-page);
+      color: var(--text-main);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Top Navigation Header */
+    header {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border-color);
+      padding: 12px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      width: 38px;
+      height: 38px;
+      background: var(--primary-light);
+      border: 1px solid var(--primary-border);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .brand-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #14532d;
+      letter-spacing: -0.3px;
+    }
+
+    .brand-subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .header-badges {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .badge-pill {
+      background: #ecfdf5;
+      color: #047857;
+      border: 1px solid #a7f3d0;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .badge-pill.gray {
+      background: #f1f5f9;
+      color: #475569;
+      border-color: #cbd5e1;
+    }
+
+    /* Main Container (Sidebar + Chat) */
+    .app-container {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+      max-width: 1440px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    /* Sidebar / HUD */
+    .sidebar {
+      width: 340px;
+      background: #ffffff;
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      flex-shrink: 0;
+      padding: 16px;
+      gap: 16px;
+    }
+
+    .sidebar-section-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .profile-card {
+      background: #fafaf9;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .profile-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      padding: 4px 0;
+      border-bottom: 1px dashed #f1f5f9;
+    }
+
+    .profile-row:last-child {
+      border-bottom: none;
+    }
+
+    .profile-label {
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .profile-value {
+      font-weight: 600;
+      color: #1e293b;
+      background: #ffffff;
+      padding: 2px 8px;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
+      font-size: 12px;
+    }
+
+    .profile-value.active {
+      background: var(--primary-light);
+      border-color: var(--primary-border);
+      color: var(--primary);
+    }
+
+    .regex-box {
+      background: #0f172a;
+      color: #f8fafc;
+      border-radius: 8px;
+      padding: 10px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 11px;
+      line-height: 1.5;
+      overflow-x: auto;
+    }
+
+    .regex-tag {
+      color: #38bdf8;
+    }
+
+    .examples-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .example-btn {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 12px;
+      text-align: left;
+      color: #334155;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      line-height: 1.4;
+    }
+
+    .example-btn:hover {
+      background: var(--primary-light);
+      border-color: var(--primary-border);
+      color: var(--primary);
+      transform: translateY(-1px);
+    }
+
+    /* Chat Area */
+    .chat-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #f8fafc;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .message {
+      display: flex;
+      flex-direction: column;
+      max-width: 82%;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message.user {
+      align-self: flex-end;
+    }
+
+    .message.bot {
+      align-self: flex-start;
+    }
+
+    .message-bubble {
+      padding: 12px 16px;
+      border-radius: 14px;
+      font-size: 14px;
+      line-height: 1.5;
+      box-shadow: var(--shadow-sm);
+      word-wrap: break-word;
+    }
+
+    .message.user .message-bubble {
+      background: var(--bubble-user);
+      color: #ffffff;
+      border-bottom-right-radius: 2px;
+    }
+
+    .message.bot .message-bubble {
+      background: var(--bubble-bot);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      border-bottom-left-radius: 2px;
+    }
+
+    .message-time {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      padding: 0 4px;
+    }
+
+    .message.user .message-time {
+      text-align: right;
+    }
+
+    /* Crop Card Inside Chat */
+    .badge-why {
+      background: #dcfce7;
+      color: #166534;
+      font-size: 11px;
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-weight: 500;
+    }
+
+    .caution-item {
+      font-size: 11px;
+      color: #b45309;
+      background: #fef3c7;
+      padding: 4px 8px;
+      border-radius: 6px;
+      margin-top: 4px;
+    }
+
+    .chip-btn {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      padding: 6px 12px;
+      border-radius: 16px;
+      font-size: 12px;
+      color: #334155;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.15s ease;
+      display: inline-block;
+    }
+
+    .chip-btn:hover {
+      background: var(--primary-light);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    /* Quick Action Chips Bar */
+    .quick-chips-bar {
+      padding: 8px 20px;
+      background: #ffffff;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .quick-chip {
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      color: #334155;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 5px 12px;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .quick-chip:hover {
+      background: var(--primary-light);
+      border-color: var(--primary-border);
+      color: var(--primary);
+    }
+
+    /* Input Bar */
+    .chat-input-bar {
+      background: #ffffff;
+      padding: 12px 20px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .input-wrapper {
+      flex: 1;
+      position: relative;
+    }
+
+    .chat-input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      font-size: 14px;
+      outline: none;
+      transition: all 0.15s ease;
+      background: #f8fafc;
+    }
+
+    .chat-input:focus {
+      background: #ffffff;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.15);
+    }
+
+    .send-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--primary);
+      border: none;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      flex-shrink: 0;
+    }
+
+    .send-btn:hover {
+      background: var(--primary-hover);
+      transform: scale(1.04);
+    }
+
+    .send-btn:disabled {
+      background: #cbd5e1;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Typing indicator */
+    .typing-indicator {
+      display: none;
+      align-items: center;
+      gap: 4px;
+      padding: 8px 14px;
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      width: fit-content;
+      margin-bottom: 8px;
+    }
+
+    .typing-dot {
+      width: 6px;
+      height: 6px;
+      background: #94a3b8;
+      border-radius: 50%;
+      animation: bounce 1.4s infinite ease-in-out both;
+    }
+
+    .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+    .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+    @keyframes bounce {
+      0%, 80%, 100% { transform: scale(0); }
+      40% { transform: scale(1); }
+    }
+
+    /* Responsive */
+    @media (max-width: 860px) {
+      .sidebar {
+        display: none;
+      }
+      .message {
+        max-width: 92%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header -->
+  <header>
+    <div class="brand">
+      <div class="brand-logo">🌾</div>
+      <div>
+        <div class="brand-title">AgroAdvisor Chat</div>
+        <div class="brand-subtitle">Rule-Based Crop Recommendations & Agronomy Engine</div>
+      </div>
+    </div>
+    <div class="header-badges">
+      <div class="badge-pill">
+        <span>⚡</span> 100% Deterministic Regex
+      </div>
+      <div class="badge-pill gray">
+        <span>🚫</span> No AI / No LLM
+      </div>
+      <button class="chip-btn" onclick="resetChat()" title="Reset session" style="margin-left:8px;">
+        🔄 Reset
+      </button>
+    </div>
+  </header>
+
+  <!-- App Body -->
+  <div class="app-container">
+
+    <!-- Left Sidebar / Live HUD -->
+    <aside class="sidebar">
+      <div>
+        <div class="sidebar-section-title">
+          <span>Active Farm Profile</span>
+          <span style="font-size:10px; color:#15803d; font-weight:600;">LIVE STATE</span>
+        </div>
+        <div class="profile-card" id="profile-card">
+          <div class="profile-row">
+            <span class="profile-label">📍 State</span>
+            <span class="profile-value" id="hud-state">Not specified</span>
+          </div>
+          <div class="profile-row">
+            <span class="profile-label">🌱 Soil Type</span>
+            <span class="profile-value" id="hud-soil">Regional Default</span>
+          </div>
+          <div class="profile-row">
+            <span class="profile-label">💧 Irrigation</span>
+            <span class="profile-value" id="hud-irrigated">Rainfed</span>
+          </div>
+          <div class="profile-row">
+            <span class="profile-label">📐 Land Area</span>
+            <span class="profile-value" id="hud-acres">1.0 acre</span>
+          </div>
+          <div class="profile-row">
+            <span class="profile-label">💰 Budget / Acre</span>
+            <span class="profile-value" id="hud-capital">₹40,000</span>
+          </div>
+          <div class="profile-row">
+            <span class="profile-label">⚖️ Risk Tolerance</span>
+            <span class="profile-value" id="hud-risk">Medium</span>
+          </div>
+          <div class="profile-row">
+            <span class="profile-label">📅 Sowing Season</span>
+            <span class="profile-value" id="hud-sowing">Rabi (Nov)</span>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="sidebar-section-title">Regex Match Inspector</div>
+        <div class="regex-box" id="regex-inspector">
+          <span style="color:#64748b;">// Entities parsed from your input will show here in real-time</span><br>
+          <span class="regex-tag">Ready for input...</span>
+        </div>
+      </div>
+
+      <div>
+        <div class="sidebar-section-title">Try Example Prompts</div>
+        <div class="examples-list">
+          <button class="example-btn" onclick="sendSuggestion('I have land in Goa with 3 acres, rainfed')">
+            🌴 <strong>Goa</strong>: 3 acres, rainfed coastal
+          </button>
+          <button class="example-btn" onclick="sendSuggestion('I have 5 acres of loam soil in Punjab, canal irrigated, rabi season with 30k budget')">
+            🌾 <strong>Punjab</strong>: 5 acres, loam, canal, 30k budget
+          </button>
+          <button class="example-btn" onclick="sendSuggestion('Karnataka, 4 acres red soil, borewell irrigation, low risk')">
+            🌱 <strong>Karnataka</strong>: 4 acres, red soil, borewell, safe
+          </button>
+          <button class="example-btn" onclick="sendSuggestion('Maharashtra, 3 acres black soil, rainfed, looking for rabi crops')">
+            🌧️ <strong>Maharashtra</strong>: 3 acres, black soil, rainfed
+          </button>
+          <button class="example-btn" onclick="sendSuggestion('I am in UP with 2.5 acres, high risk mode for max profit')">
+            💰 <strong>UP</strong>: 2.5 acres, high risk/max profit
+          </button>
+          <button class="example-btn" onclick="sendSuggestion('Show full 6-season rotation plan and schedule')">
+            📋 <strong>Full Plan</strong>: 6-season rotation & tasks
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Chat Column -->
+    <main class="chat-area">
+      <!-- Message Stream -->
+      <div class="chat-messages" id="chat-messages">
+        <!-- Initial Bot Greeting -->
+        <div class="message bot">
+          <div class="message-bubble">
+            <h3 style="margin:0 0 6px 0; color:#15803d; font-size:16px;">🌾 Welcome to AgroAdvisor Chat!</h3>
+            <p style="margin:0 0 10px 0; font-size:13px; color:#475569;">
+              This system gives you agronomy-based crop recommendations and complete rotation plans.
+              It uses <strong>regular expressions and deterministic formulas</strong> (no black-box AI).
+            </p>
+            <p style="margin:0 0 8px 0; font-size:13px; font-weight:600; color:#1e293b;">
+              Type details about your farm naturally, or click a quick starter:
+            </p>
+            <div style="display:flex; flex-direction:column; gap:6px; margin-top:8px;">
+              <button class="chip-btn" onclick="sendSuggestion('I have 5 acres of loam soil in Punjab with canal irrigation for rabi season')">
+                🌾 5 acres in Punjab, loam soil, canal irrigated, rabi
+              </button>
+              <button class="chip-btn" onclick="sendSuggestion('Karnataka, 4 acres red soil with borewell')">
+                🌱 Karnataka, 4 acres red soil with borewell
+              </button>
+              <button class="chip-btn" onclick="sendSuggestion('Maharashtra, 3 acres black soil, rainfed')">
+                🌧️ Maharashtra, 3 acres black soil, rainfed
+              </button>
+            </div>
+          </div>
+          <div class="message-time">Just now</div>
+        </div>
+      </div>
+
+      <!-- Typing Indicator -->
+      <div class="typing-indicator" id="typing-indicator" style="margin-left: 20px;">
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <span style="font-size:11px; color:#64748b; margin-left:4px;">Analyzing agronomic formulas...</span>
+      </div>
+
+      <!-- Quick Action Chips Ribbon -->
+      <div class="quick-chips-bar" id="quick-chips-bar">
+        <button class="quick-chip" onclick="sendSuggestion('Show full 6-season plan')">📋 Full 6-Season Plan</button>
+        <button class="quick-chip" onclick="sendSuggestion('Can I grow maize?')">🌽 Can I grow maize?</button>
+        <button class="quick-chip" onclick="sendSuggestion('What about tomato?')">🍅 What about tomato?</button>
+        <button class="quick-chip" onclick="sendSuggestion('Change to low risk mode')">🛡️ Low Risk Mode</button>
+        <button class="quick-chip" onclick="sendSuggestion('Set irrigation to borewell')">💧 Borewell Irrigated</button>
+        <button class="quick-chip" onclick="sendSuggestion('Set rainfed')">🌧️ Rainfed</button>
+      </div>
+
+      <!-- Input Bar -->
+      <div class="chat-input-bar">
+        <div class="input-wrapper">
+          <input
+            type="text"
+            id="user-input"
+            class="chat-input"
+            placeholder="Type naturally (e.g. 'I have 5 acres of red soil in Karnataka, borewell irrigated')..."
+            autocomplete="off"
+          />
+        </div>
+        <button id="send-btn" class="send-btn" onclick="sendMessage()" title="Send Message">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Client-side Farm Profile State
+    let currentProfile = {};
+
+    const chatMessages = document.getElementById("chat-messages");
+    const userInput = document.getElementById("user-input");
+    const sendBtn = document.getElementById("send-btn");
+    const typingIndicator = document.getElementById("typing-indicator");
+    const quickChipsBar = document.getElementById("quick-chips-bar");
+    const regexInspector = document.getElementById("regex-inspector");
+
+    // Press Enter to send
+    userInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    function formatTime() {
+      const now = new Date();
+      return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function appendUserMessage(text) {
+      const msgDiv = document.createElement("div");
+      msgDiv.className = "message user";
+      msgDiv.innerHTML = `
+        <div class="message-bubble">${escapeHtml(text)}</div>
+        <div class="message-time">${formatTime()}</div>
+      `;
+      chatMessages.appendChild(msgDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function appendBotMessage(htmlContent) {
+      const msgDiv = document.createElement("div");
+      msgDiv.className = "message bot";
+      msgDiv.innerHTML = `
+        <div class="message-bubble">${htmlContent}</div>
+        <div class="message-time">${formatTime()}</div>
+      `;
+      chatMessages.appendChild(msgDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function updateHUD(profile, extracted) {
+      if (!profile) return;
+
+      const stateEl = document.getElementById("hud-state");
+      const soilEl = document.getElementById("hud-soil");
+      const irrigEl = document.getElementById("hud-irrigated");
+      const acresEl = document.getElementById("hud-acres");
+      const capitalEl = document.getElementById("hud-capital");
+      const riskEl = document.getElementById("hud-risk");
+      const sowingEl = document.getElementById("hud-sowing");
+
+      if (profile.state) {
+        stateEl.textContent = profile.state;
+        stateEl.className = "profile-value active";
+      } else {
+        stateEl.textContent = "Not specified";
+        stateEl.className = "profile-value";
+      }
+
+      if (profile.soil_type) {
+        const src = profile.soil_type_source ? ` (${profile.soil_type_source})` : '';
+        soilEl.textContent = profile.soil_type.toUpperCase() + src;
+        soilEl.className = "profile-value active";
+      } else {
+        soilEl.textContent = "Regional Default";
+        soilEl.className = "profile-value";
+      }
+
+      if (profile.irrigated !== undefined && profile.irrigated !== null) {
+        const src = profile.irrigated_source ? ` (${profile.irrigated_source})` : '';
+        irrigEl.textContent = (profile.irrigated ? "Irrigated 💧" : "Rainfed 🌧️") + src;
+        irrigEl.className = "profile-value active";
+      } else {
+        irrigEl.textContent = "Rainfed (Default)";
+        irrigEl.className = "profile-value";
+      }
+
+      if (profile.acres) {
+        acresEl.textContent = profile.acres + " acres";
+        acresEl.className = "profile-value active";
+      } else {
+        acresEl.textContent = "1.0 acre (Default)";
+        acresEl.className = "profile-value";
+      }
+
+      if (profile.capital_per_acre) {
+        capitalEl.textContent = "₹" + Number(profile.capital_per_acre).toLocaleString();
+        capitalEl.className = "profile-value active";
+      } else {
+        capitalEl.textContent = "₹40,000 (Assumed)";
+        capitalEl.className = "profile-value";
+      }
+
+      if (profile.risk_tolerance) {
+        riskEl.textContent = profile.risk_tolerance.toUpperCase();
+        riskEl.className = "profile-value active";
+      } else {
+        riskEl.textContent = "MEDIUM";
+        riskEl.className = "profile-value";
+      }
+
+      if (profile.sowing_date) {
+        sowingEl.textContent = profile.sowing_date;
+        sowingEl.className = "profile-value active";
+      } else {
+        sowingEl.textContent = "Current Season";
+        sowingEl.className = "profile-value";
+      }
+
+      // Update Regex Inspector Box
+      if (extracted && Object.keys(extracted).length > 0) {
+        let inspectText = '<span style="color:#4ade80;">// Regex Match Success:</span><br>';
+        for (const [k, v] of Object.entries(extracted)) {
+          inspectText += `<span class="regex-tag">${k}</span>: <strong>${JSON.stringify(v)}</strong><br>`;
+        }
+        regexInspector.innerHTML = inspectText;
+      } else {
+        regexInspector.innerHTML = '<span style="color:#94a3b8;">// No new parameters extracted from last message</span>';
+      }
+    }
+
+    function updateQuickChips(chips) {
+      if (!chips || chips.length === 0) return;
+      quickChipsBar.innerHTML = "";
+      chips.forEach(chip => {
+        const btn = document.createElement("button");
+        btn.className = "quick-chip";
+        btn.textContent = chip;
+        btn.onclick = () => sendSuggestion(chip);
+        quickChipsBar.appendChild(btn);
+      });
+    }
+
+    async function sendMessage() {
+      const text = userInput.value.trim();
+      if (!text) return;
+
+      appendUserMessage(text);
+      userInput.value = "";
+      sendBtn.disabled = true;
+      typingIndicator.style.display = "flex";
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+
+      try {
+        const res = await fetch("/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            message: text,
+            profile: currentProfile
+          })
+        });
+
+        if (!res.ok) {
+          const errData = await res.json();
+          throw new Error(errData.error || "Server error");
+        }
+
+        const data = await res.json();
+        currentProfile = data.profile || {};
+        updateHUD(currentProfile, data.extracted);
+        if (data.quick_replies) {
+          updateQuickChips(data.quick_replies);
+        }
+
+        appendBotMessage(data.reply_html || `<p>${escapeHtml(data.reply)}</p>`);
+      } catch (err) {
+        appendBotMessage(`<p style="color:#dc2626;"><strong>Error:</strong> ${escapeHtml(err.message)}</p>`);
+      } finally {
+        typingIndicator.style.display = "none";
+        sendBtn.disabled = false;
+        userInput.focus();
+      }
+    }
+
+    function sendSuggestion(text) {
+      userInput.value = text;
+      sendMessage();
+    }
+
+    async function resetChat() {
+      try {
+        const res = await fetch("/chat/reset", { method: "POST" });
+        const data = await res.json();
+        currentProfile = {};
+        updateHUD({}, {});
+        appendBotMessage(data.reply_html || "<p>Conversation reset.</p>");
+        if (data.quick_replies) {
+          updateQuickChips(data.quick_replies);
+        }
+      } catch (e) {
+        currentProfile = {};
+        updateHUD({}, {});
+        appendBotMessage("<p>Conversation reset.</p>");
+      }
+    }
+  </script>
+</body>
+</html>

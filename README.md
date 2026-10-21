@@ -1,9 +1,24 @@
 # Crop Advisor (formula-based, no ML, standard library only)
 
-## Run
+## 🌐 Web Chat Interface (Clean & Rule-Based)
+Launch the interactive web chat:
+```bash
+ALLOW_NO_AUTH=1 python server.py
+# Or with virtual environment:
+./venv/bin/python server.py
+```
+Then open your browser at **http://localhost:8000**
+
+- **Chat Interface**: Type farm descriptions in conversational English (e.g. *"I have 5 acres of red soil in Karnataka with borewell"*).
+- **100% Deterministic Regex**: Uses pure Python `re` pattern matching to extract farm location, soil type, irrigation status, acreage, budget, risk preference, and season.
+- **NO AI/LLM Required**: Zero black-box AI; recommendations are calculated using agronomic suitability formulas, regional climate defaults, and market price models.
+- **Live Farm HUD**: Displays real-time parsed slots and a regex inspector.
+- **Full Plans**: Type *"Show full plan"* to see a 6-season rotation, plot allocation, and dated farming tasks.
+
+## 💻 CLI Run
     python run.py --input sample_input.json
     python run.py --input sample_input.json --today 2026-11-12   # simulate a later day (re-plans schedule)
-Needs Python 3.8+. No pip installs. Full results are saved to report.json.
+Needs Python 3.8+. Full results are saved to report.json.
 
 ## Files
 | File | Module | Formula |

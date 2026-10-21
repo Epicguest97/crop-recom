@@ -6,9 +6,9 @@ import hmac
 import logging
 import os
 
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template
 
-from crop_advisor import service
+from crop_advisor import service, chat_parser
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 log = logging.getLogger("crop-api")
@@ -21,15 +21,39 @@ app = Flask(__name__)
 app.config["JSON_SORT_KEYS"] = False
 app.config["MAX_CONTENT_LENGTH"] = 64 * 1024
 
+PUBLIC_PATHS = {"/health", "/", "/chat", "/chat/reset", "/options"}
+
 
 @app.before_request
 def check_key():
-    if request.path == "/health" or not API_KEY:
+    if request.path in PUBLIC_PATHS or request.path.startswith("/static/") or not API_KEY:
         return None
     sent = request.headers.get("X-API-Key", "")
     if not hmac.compare_digest(sent, API_KEY):
         return jsonify(error="unauthorized"), 401
     return None
+
+
+@app.get("/")
+def index():
+    return render_template("index.html")
+
+
+@app.post("/chat")
+def chat_route():
+    body = request.get_json(silent=True) or {}
+    message = str(body.get("message", "")).strip()
+    profile = body.get("profile") or {}
+    if not isinstance(profile, dict):
+        profile = {}
+    result = chat_parser.handle_chat(message, profile)
+    return jsonify(result)
+
+
+@app.post("/chat/reset")
+def chat_reset_route():
+    result = chat_parser.handle_chat("reset", {})
+    return jsonify(result)
 
 
 @app.get("/health")
