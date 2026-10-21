@@ -638,6 +638,8 @@
   </div>
 
   <script>
+    const API_BASE = "https://crop.mehul.sbs";
+
     // Client-side Farm Profile State
     let currentProfile = {};
 
@@ -793,7 +795,7 @@
       chatMessages.scrollTop = chatMessages.scrollHeight;
 
       try {
-        const res = await fetch("/chat", {
+        const res = await fetch(`${API_BASE}/chat`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -831,7 +833,7 @@
 
     async function resetChat() {
       try {
-        const res = await fetch("/chat/reset", { method: "POST" });
+        const res = await fetch(`${API_BASE}/chat/reset`, { method: "POST" });
         const data = await res.json();
         currentProfile = {};
         updateHUD({}, {});

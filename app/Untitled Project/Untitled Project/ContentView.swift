@@ -81,9 +81,12 @@ class ChatViewModel: ObservableObject {
     @Published var isLoading: Bool = false
     @Published var profile: FarmProfile = FarmProfile()
     @Published var isServerOnline: Bool = false
-    @Published var serverURL: String = "http://127.0.0.1:8000"
+    @Published var serverURL: String = "https://crop.mehul.sbs"
 
     private var profileDict: [String: Any] = [:]
+    private var apiKey: String {
+        UserDefaults.standard.string(forKey: "CropAdvisorAPIKey") ?? ""
+    }
 
     init() {
         // Welcome message
@@ -160,6 +163,7 @@ class ChatViewModel: ObservableObject {
             guard let url = URL(string: "\(serverURL)/chat/reset") else { return }
             var req = URLRequest(url: url)
             req.httpMethod = "POST"
+            addAPIKey(to: &req)
             _ = try? await URLSession.shared.data(for: req)
         }
     }
@@ -174,6 +178,7 @@ class ChatViewModel: ObservableObject {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        addAPIKey(to: &request)
         request.timeoutInterval = 10.0
 
         let payload: [String: Any] = [
@@ -202,6 +207,12 @@ class ChatViewModel: ObservableObject {
         }
 
         isLoading = false
+    }
+
+    private func addAPIKey(to request: inout URLRequest) {
+        if !apiKey.isEmpty {
+            request.setValue(apiKey, forHTTPHeaderField: "X-API-Key")
+        }
     }
 
     private func parseChatResponse(_ json: [String: Any]) {

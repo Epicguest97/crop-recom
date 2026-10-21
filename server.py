@@ -24,8 +24,18 @@ app.config["MAX_CONTENT_LENGTH"] = 64 * 1024
 PUBLIC_PATHS = {"/health", "/", "/chat", "/chat/reset", "/options"}
 
 
+@app.after_request
+def add_cors(response):
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, X-API-Key"
+    return response
+
+
 @app.before_request
 def check_key():
+    if request.method == "OPTIONS":
+        return "", 204
     if request.path in PUBLIC_PATHS or request.path.startswith("/static/") or not API_KEY:
         return None
     sent = request.headers.get("X-API-Key", "")
